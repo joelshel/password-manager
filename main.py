@@ -42,12 +42,6 @@ def get_key(password: bytes) -> bytes:
     return key
 
 
-def get_apps() -> list[str]:
-    with open(PASSWORDS, "r") as file:
-        apps = [line.strip().split(" ")[0] for line in file.readlines()]
-    return apps
-
-
 def show_password(f: Fernet, passwords: dict[str, str]):
     if not passwords:
         print(change_color("There is no password saved yet", WARNING))
@@ -72,7 +66,7 @@ def show_password(f: Fernet, passwords: dict[str, str]):
 
 
 def add_password(f: Fernet, passwords: dict[str, str]):
-    apps = [app for app in passwords]
+    apps = passwords.keys()
 
     app = input("Enter the app name: ")
     if app in apps:
@@ -87,8 +81,8 @@ def add_password(f: Fernet, passwords: dict[str, str]):
         print(change_color("The passwords don't match, try again", WARNING))
 
     password = f.encrypt(password.encode("utf-8")).decode()
-    append_password(PASSWORDS, app, password)
     passwords[app] = password
+    write_passwords(PASSWORDS, passwords)
     print(change_color(f"{app} password was added", SUCCESS))
 
 

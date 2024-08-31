@@ -1,18 +1,18 @@
-def read_passwords(file) -> dict[str, str]:
-    with open(file, "r") as f:
-        lines = f.readlines()
+import json
+from json.decoder import JSONDecodeError
+import sys
+from colors import change_color, DANGER
 
-    lines = [line.strip().split(" ") for line in lines]
-    passwords = {app: password for app, password in lines}
-    return passwords
+
+def read_passwords(file) -> dict[str, str]:
+    try:
+        with open(file, "r") as f:
+            return json.load(f)
+    except JSONDecodeError:
+        print(change_color(f"{file} is not in JSON format", DANGER))
+        sys.exit()
 
 
 def write_passwords(file: str, passwords: dict[str, str]):
-    lines = [f"{app} {password}\n" for app, password in passwords.items()]
     with open(file, "w") as f:
-        f.writelines(lines)
-
-
-def append_password(file: str, app: str, password: str):
-    with open(file, "a") as f:
-        f.write(f"{app} {password}\n")
+        json.dump(passwords, f)

@@ -2,8 +2,6 @@ import os
 import os.path as path
 
 
-# change name, doesnt verify if the file exists, verifies if the file
-# doesnt exist or if it's empty
 def is_empty(file: str) -> bool:
     """
     Function to check if a file is empty or not
