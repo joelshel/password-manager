@@ -2,16 +2,14 @@
 
 import base64
 import os
-import os.path as path
 from getpass import getpass
-from cryptography.fernet import Fernet
-from cryptography.fernet import InvalidToken
+from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import pyperclip
-from utils.colors import *
-from utils.files import *
-from utils.passwords import *
+from utils.colors import change_color, SUCCESS, WARNING, DANGER
+from utils.files import is_empty
+from utils.passwords import read_passwords, write_passwords
 
 PASSWORDS = "passwords.txt"
 SALT = "salt.txt"
@@ -19,7 +17,7 @@ SALT = "salt.txt"
 
 def get_salt() -> bytes:
 
-    if not path.exists(SALT):
+    if is_empty(SALT):
         salt = os.urandom(32)
 
         with open(SALT, "wb") as file:
@@ -86,7 +84,7 @@ def add_password(f: Fernet, passwords: dict[str, str]):
     print(change_color(f"{app} password was added", SUCCESS))
 
 
-def delete_password(f: Fernet, passwords: dict[str, str]):
+def delete_password(passwords: dict[str, str]):
     if not passwords:
         print(change_color("There is no password saved yet", WARNING))
         return
@@ -131,7 +129,7 @@ def list_apps(passwords: dict[str, str]):
         print(change_color("There is no password saved yet", WARNING))
         return
 
-    [print(change_color(app, SUCCESS)) for app in passwords]
+    print(*(change_color(app, SUCCESS) for app in passwords), sep="\n")
 
 
 def change_master_password(f: Fernet, passwords: dict[str, str]) -> Fernet:
@@ -155,23 +153,18 @@ def change_master_password(f: Fernet, passwords: dict[str, str]) -> Fernet:
             is_master_pass = verify_password(temp_f, passwords)
             if is_master_pass:
                 break
-            else:
-                print(
-                    change_color(
-                        "Master password incorrect, try again.", WARNING
-                    )
-                )
+
+            print(
+                change_color("Master password incorrect, try again.", WARNING)
+            )
 
     while True:
         new_master_pass = getpass("Enter the new master password: ")
         new_master_pass_repeat = getpass("Repeat the new master password: ")
-
         if new_master_pass == new_master_pass_repeat:
             break
-        else:
-            print(
-                change_color("The passwords don't match try again.", WARNING)
-            )
+
+        print(change_color("The passwords don't match try again.", WARNING))
 
     new_master_pass = new_master_pass.encode("utf-8")
     os.remove(SALT)
@@ -220,7 +213,7 @@ def menu(f: Fernet, passwords: dict[str, str]):
         elif option == 2:
             add_password(f, passwords)
         elif option == 3:
-            delete_password(f, passwords)
+            delete_password(passwords)
         elif option == 4:
             update_password(f, passwords)
         elif option == 5:
@@ -252,12 +245,8 @@ def login(passwords: dict[str, str]) -> Fernet:
         is_master_pass = verify_password(f, passwords)
         if is_master_pass:
             break
-        else:
-            print(
-                change_color(
-                    "Master password incorrect, try again.\n", WARNING
-                )
-            )
+
+        print(change_color("Master password incorrect, try again.\n", WARNING))
 
     return f
 

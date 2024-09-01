@@ -1,5 +1,4 @@
 import os
-import os.path as path
 
 
 def is_empty(file: str) -> bool:
@@ -19,4 +18,4 @@ def is_empty(file: str) -> bool:
     bool
         True if file is empty, false otherwise
     """
-    return not path.exists(file) or os.stat(file).st_size <= 1
+    return not os.path.exists(file) or os.stat(file).st_size <= 1
