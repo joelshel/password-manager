@@ -3,10 +3,8 @@ import os
 
 def is_empty(file: str) -> bool:
     """
-    Function to check if a file is empty or not
-
-    Returns True if the file is empty, the file has an empty line,
-    or if the file doesn't exist
+    Checks if a file is empty or not. Returns True if the file is empty,
+    the file has an empty line, or if the file doesn't exist
 
     Parameters
     ----------

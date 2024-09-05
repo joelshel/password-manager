@@ -6,9 +6,7 @@ DANGER = (240, 62, 62)
 
 def change_color(text: str, color: tuple[int, int, int]) -> str:
     """
-    Function to change the color of a string when printing it to the
-    stdout
-
+    Changes the color of a string when printing it to the stdout.
     Returns a string with ANSI code to change a color when printing it
     to the stdout
 
