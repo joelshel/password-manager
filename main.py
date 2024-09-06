@@ -40,7 +40,7 @@ def get_key(password: bytes) -> bytes:
     return key
 
 
-def show_password(f: Fernet, passwords: dict[str, str]):
+def show_password(f: Fernet, passwords: dict[str, str]) -> None:
     if not passwords:
         print(change_color("There is no password saved yet", WARNING))
         return
@@ -63,7 +63,7 @@ def show_password(f: Fernet, passwords: dict[str, str]):
     )
 
 
-def add_password(f: Fernet, passwords: dict[str, str]):
+def add_password(f: Fernet, passwords: dict[str, str]) -> None:
     apps = passwords.keys()
 
     app = input("Enter the app name: ")
@@ -84,7 +84,7 @@ def add_password(f: Fernet, passwords: dict[str, str]):
     print(change_color(f"{app} password was added", SUCCESS))
 
 
-def delete_password(passwords: dict[str, str]):
+def delete_password(passwords: dict[str, str]) -> None:
     if not passwords:
         print(change_color("There is no password saved yet", WARNING))
         return
@@ -100,7 +100,7 @@ def delete_password(passwords: dict[str, str]):
     print(change_color(f"{app} password deleted", SUCCESS))
 
 
-def update_password(f: Fernet, passwords: dict[str, str]):
+def update_password(f: Fernet, passwords: dict[str, str]) -> None:
     if not passwords:
         print(change_color("There is no password saved yet", WARNING))
         return
@@ -124,7 +124,7 @@ def update_password(f: Fernet, passwords: dict[str, str]):
     print(change_color(f"{app} password changed", SUCCESS))
 
 
-def list_apps(passwords: dict[str, str]):
+def list_apps(passwords: dict[str, str]) -> None:
     if not passwords:
         print(change_color("There is no password saved yet", WARNING))
         return
@@ -132,7 +132,9 @@ def list_apps(passwords: dict[str, str]):
     print(*(change_color(app, SUCCESS) for app in passwords), sep="\n")
 
 
-def change_master_password(f: Fernet, passwords: dict[str, str]) -> Fernet:
+def change_master_password(
+    f: Fernet, passwords: dict[str, str]
+) -> tuple[Fernet, dict[str, str]]:
     if not passwords:
         print(
             change_color(
@@ -159,14 +161,17 @@ def change_master_password(f: Fernet, passwords: dict[str, str]) -> Fernet:
             )
 
     while True:
-        new_master_pass = getpass("Enter the new master password: ")
-        new_master_pass_repeat = getpass("Repeat the new master password: ")
+        new_master_pass = getpass("Enter the new master password: ").encode(
+            "utf-8"
+        )
+        new_master_pass_repeat = getpass(
+            "Repeat the new master password: "
+        ).encode("utf-8")
         if new_master_pass == new_master_pass_repeat:
             break
 
         print(change_color("The passwords don't match try again.", WARNING))
 
-    new_master_pass = new_master_pass.encode("utf-8")
     os.remove(SALT)
     if not passwords:
         key = get_key(new_master_pass)
@@ -179,7 +184,7 @@ def change_master_password(f: Fernet, passwords: dict[str, str]) -> Fernet:
 
 def reencrypt_passwords(
     f: Fernet, master_pass: bytes, passwords: dict[str, str]
-) -> Fernet:
+) -> tuple[Fernet, dict[str, str]]:
     key = get_key(master_pass)
     new_f = Fernet(key)
 
@@ -192,7 +197,7 @@ def reencrypt_passwords(
     return new_f, passwords
 
 
-def menu(f: Fernet, passwords: dict[str, str]):
+def menu(f: Fernet, passwords: dict[str, str]) -> None:
     while True:
         print("\n1. read a password")
         print("2. add a new password")
@@ -202,11 +207,10 @@ def menu(f: Fernet, passwords: dict[str, str]):
         print("6. change the master password")
         print("0. exit")
 
-        option = input("choose an option: ")
         try:
-            option = int(option)
+            option = int(input("choose an option: "))
         except ValueError:
-            pass
+            option = -1
 
         if option == 1:
             show_password(f, passwords)
@@ -228,7 +232,7 @@ def menu(f: Fernet, passwords: dict[str, str]):
 
 def verify_password(f: Fernet, passwords: dict[str, str]) -> bool:
     first = list(passwords.keys())[0]
-    password = passwords[first]
+    password = passwords[first].encode("utf-8")
 
     try:
         f.decrypt(password)
@@ -275,7 +279,7 @@ def first_login() -> Fernet:
     return f
 
 
-def main():
+def main() -> None:
     if is_empty(PASSWORDS):
         passwords = {}
         f = first_login()
